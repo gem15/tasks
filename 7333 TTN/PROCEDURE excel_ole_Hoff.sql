@@ -64,7 +64,7 @@ begin
 	OLE2.Set_Property(application, 'Visible', True); 
 	--Sheets("TN_FRONTE").Select
 	ins_arg_excel (p_nomer_zak_cyc , 3 , 7 );--Range("G3").Value = p_nomer_zak_cyc
-	--> pz6707 --> ins_arg_excel ('Р­РєР·РµРјРїР»СЏСЂ в„–__' , 5 , 1);--Range("A5").Value = p_ne
+	--> pz6707 --> ins_arg_excel ('Экземпляр №__' , 5 , 1);--Range("A5").Value = p_ne
 	ins_arg_excel (p_plan_vr_otgruz , 5 , 3 );--Range("C5").Value = p_plan_vr_otgruz
 	ins_arg_excel (p_nomer_adz , 4 , 5 );--Range("E4").Value = p_nomer_adz
 	--ins_arg_excel (P_ZAO_GK_SEVER , 9 , 1 ); --> yurmir *** 12.08.2018 pz6707 *** 	
@@ -75,7 +75,7 @@ begin
 	ins_arg_excel (p_tlf_pok , 12 , 6 );--Range("F14").Value = p_tlf_pok
 
 	ins_arg_excel (p_TIPOVOI_GRUZ , 17 , 1 );--Range("A17").Value = p_TIPOVOI_GRUZ
-	ins_arg_excel ('РљРћР›РР§Р•РЎРўР’Рћ РњР•РЎРў-' ||p_KOL_VO_PALLETO_MEST , 19 , 1 );--Range("A19").Value = "РљРћР›РР§Р•РЎРўР’Рћ РњР•РЎРў-" & p_KOL_VO_PALLETO_MEST
+	ins_arg_excel ('КОЛИЧЕСТВО МЕСТ-' ||p_KOL_VO_PALLETO_MEST , 19 , 1 );--Range("A19").Value = "КОЛИЧЕСТВО МЕСТ-" & p_KOL_VO_PALLETO_MEST
 	ins_arg_excel (p_MASSA , 21 , 1 );--ange("A21").Value = p_MASSA
 	ins_arg_excel (c_c , 23 , 1 );--ange("A23").Value = " ---- "
 	ins_arg_excel (c_c , 26 , 1 );--Range("A26").Value = " ---- "
@@ -117,7 +117,7 @@ begin
 	ins_arg_excel (p_NAIME_BANK , 115 /*47*/ , 1 );--Range("A47").Value = p_NAIME_BANK
 	ins_arg_excel (p_voditel , 119 /* 51 */ , 6 );--Range("F51").Value = p_voditel
 	---------------------------------------------------
-	alert_note('РџСЂРѕРґРѕР»Р¶РёС‚СЊ РїРµС‡Р°С‚СЊ РґСЂСѓРіРёС… Р»РёСЃС‚РѕРІ РўРўРќ');
+	alert_note('Продолжить печать других листов ТТН');
 	---------------------------------------------------
 	if worksheet is not null then 
 		ole2.INVOKE (worksheet, 'Quit');

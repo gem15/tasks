@@ -11,8 +11,8 @@ PROCEDURE TTN_PRINT_HOFF IS       --<- yurmir *** 17.09.2018 *** Pz 6728 <- NEW 
     where  row_creator= user                          
     ;                      
 	rec                KB_T_PRINT_TN%rowtype;                                       
-	v_dt_sost          date;         -- РїР»Р°РЅРѕРІРѕРµ РІСЂРµРјСЏ РѕС‚РіСЂСѓР·РєРё РёР· РЎРѕР»РІРѕ
-	v_n_zakaza_cyc     varchar2(38); --в„– Р·Р°РєР°Р·Р° РІ РЎРЈРЎ
+	v_dt_sost          date;         -- плановое время отгрузки из Солво
+	v_n_zakaza_cyc     varchar2(38); --№ заказа в СУС
 	v_marker           varchar2(38);	
 	v_button           NUMBER;
 	dt_sost             date ;
@@ -33,8 +33,8 @@ PROCEDURE TTN_PRINT_HOFF IS       --<- yurmir *** 17.09.2018 *** Pz 6728 <- NEW 
 --   
 --> VVVVVV <- yurmir *** 04.10.2017 ***   
 --
-	V_ZAO_GK_SEVER      VARCHAR2(1024):= 'РћРћРћ  "Р“Рљ РЎР•Р’Р•Р РўР РђРќРЎ", РњРѕСЃРєРѕРІСЃРєР°СЏ РѕР±Р»., РҐРёРјРєРёРЅСЃРєРёР№ СЂР°Р№РѕРЅ, Рі. РҐРёРјРєРё, Р’Р°С€СѓС‚РёРЅСЃРєРѕРµ С€., Рґ.20, РєРѕСЂРї.1';
-	v_zao_gk_domod varchar2(1024) :='РћРћРћ  "Р“Рљ РЎР•Р’Р•Р РўР РђРќРЎ", РњРѕСЃРєРѕРІСЃРєР°СЏ РѕР±Р»., РќРѕРіРёРЅСЃРєРёР№ СЂ-РЅ, РїРѕСЃ. РћР±СѓС…РѕРІРѕ, РљСѓРґРёРЅРѕРІСЃРєРѕРµ С€РѕСЃСЃРµ, Рґ.4';
+	V_ZAO_GK_SEVER      VARCHAR2(1024):= 'ООО  "ГК СЕВЕРТРАНС", Московская обл., Химкинский район, г. Химки, Вашутинское ш., д.20, корп.1';
+	v_zao_gk_domod varchar2(1024) :='ООО  "ГК СЕВЕРТРАНС", Московская обл., Ногинский р-н, пос. Обухово, Кудиновское шоссе, д.4';
 	v_SVH varchar2(38);
 	v_adr0 varchar2(200);
 --   
@@ -63,10 +63,10 @@ PROCEDURE TTN_PRINT_HOFF IS       --<- yurmir *** 17.09.2018 *** Pz 6728 <- NEW 
 begin     	
     --  
     v_marker := '0';
-    v_button := Show_Note_Alert('Р–РµР»Р°РµС‚Рµ Р·Р°РїСѓСЃС‚РёС‚СЊ РїРµС‡Р°С‚СЊ РўРќ ?', '   Р”&Р°   ', '   Рќ&РµС‚  ' );
+    v_button := Show_Note_Alert('Желаете запустить печать ТН ?', '   Д&а   ', '   Н&ет  ' );
 	IF (v_button = ALERT_BUTTON1) THEN
 		---------------------------
-		-- СЃС‚Р°РЅРґР°СЂС‚РЅР°СЏ РѕР±СЂР°Р±РѕС‚РєР° --
+		-- стандартная обработка --
 		ret_code := Def_KEY_COMMIT;
 		---------------------------
 		v_marker := '1';
@@ -98,80 +98,80 @@ begin
 		    if v_error is not null then
 				alert_note( v_error );
 		    else
-				--РѕРїСЂРµРґРµР»СЏСЋ РїРµСЂРµС‡РµРЅСЊ РґРѕРєСѓРјРµРЅС‚РѕРІ Р®РќРР›Р•Р’Р•Р 
+				--определяю перечень документов ЮНИЛЕВЕР
 				if rec.id_zak = '0102284277' then
-					v_per_doc:= 'Р Р°СЃС…РѕРґРЅС‹Р№ РѕСЂРґРµСЂ в„– '||rec.nomer_adz ; --РџР—7074
+					v_per_doc:= 'Расходный ордер № '||rec.nomer_adz ; --ПЗ7074
 				else
-					v_per_doc:= 'РћС‚РіСЂСѓР·РѕС‡РЅС‹Р№ С„Р°Р№Р» в„– '||rec.nomer_adz ;                 --<- РќР°РєР»Р°РґРЅР°СЏ -- pz6707
+					v_per_doc:= 'Отгрузочный файл № '||rec.nomer_adz ;                 --<- Накладная -- pz6707
 				end if;
 /*	pz6707		v_marker := '10';
 				if rec.SCET_FACTURA = '1' then 
-					v_per_doc:= v_per_doc||', СЃС‡РµС‚/С„Р°РєС‚СѓСЂР°';
+					v_per_doc:= v_per_doc||', счет/фактура';
 				end if ;
 				if rec.KOMPLEKT_SERT_UK = '1' then 
-					v_per_doc:= v_per_doc||', РєРѕРјРїР»РµРєС‚ СЃРµСЂС‚РёС„РёРєР°С‚РѕРІ Рё РЈРљ';
+					v_per_doc:= v_per_doc||', комплект сертификатов и УК';
 				end if ;
     pz6707 */	--
 				v_marker := '11';
-				--РґР»СЏ РїР°Р»Р»РµС‚РѕРјРµСЃС‚ Рё РІРµСЃР° РЅРµРѕР±С…РѕРґРёРјРѕ РїРёСЃР°С‚СЊ С†РёС„СЂС‹ РїСЂРѕРїРёСЃСЊСЋ
+				--для паллетомест и веса необходимо писать цифры прописью
 				if rec.KOL_VO_PALLETO_MEST is not null then
-					v_KOL_VO_PALLETO := rec.KOL_VO_PALLETO_MEST||' '||utility_pkg.QuantityNatural2TextRus(to_number(rec.KOL_VO_PALLETO_MEST),'РњРµСЃС‚Рѕ,РњРµСЃС‚Р°,РњРµСЃС‚,РЎ');
+					v_KOL_VO_PALLETO := rec.KOL_VO_PALLETO_MEST||' '||utility_pkg.QuantityNatural2TextRus(to_number(rec.KOL_VO_PALLETO_MEST),'Место,Места,Мест,С');
 				end if ;
 				--
 				v_marker := '12';
 				if V_ID_MASSA_OUT is not null then
-					V_ID_MASSA_OUT_new_tn:=V_ID_MASSA_OUT||' РєРі.';
+					V_ID_MASSA_OUT_new_tn:=V_ID_MASSA_OUT||' кг.';
 					if instr(V_ID_MASSA_OUT,'.') > 0 then
 						V_ID_MASSA_OUT_ts:= substr( V_ID_MASSA_OUT,1,instr( V_ID_MASSA_OUT,'.')-1) ;
 						V_ID_MASSA_OUT_dr:= substr(V_ID_MASSA_OUT,instr(V_ID_MASSA_OUT,'.')+1);
-						V_ID_MASSA_OUT := V_ID_MASSA_OUT_ts||', '||utility_pkg.QuantityNatural2TextRus(to_number(V_ID_MASSA_OUT_ts),'РєРёР»РѕРіСЂР°РјРј,РєРёР»РѕРіСЂР°РјРјР°,РєРёР»РѕРіСЂР°РјРј,Рњ')||' ,'||V_ID_MASSA_OUT_dr;
+						V_ID_MASSA_OUT := V_ID_MASSA_OUT_ts||', '||utility_pkg.QuantityNatural2TextRus(to_number(V_ID_MASSA_OUT_ts),'килограмм,килограмма,килограмм,М')||' ,'||V_ID_MASSA_OUT_dr;
 					--alert_note('V_ID_MASSA_OUT DROBNOE = '||V_ID_MASSA_OUT);	    	
 					else 
-						V_ID_MASSA_OUT := V_ID_MASSA_OUT||', '||utility_pkg.QuantityNatural2TextRus(to_number(V_ID_MASSA_OUT),'РєРёР»РѕРіСЂР°РјРј,РєРёР»РѕРіСЂР°РјРјР°,РєРёР»РѕРіСЂР°РјРј,Рњ');
+						V_ID_MASSA_OUT := V_ID_MASSA_OUT||', '||utility_pkg.QuantityNatural2TextRus(to_number(V_ID_MASSA_OUT),'килограмм,килограмма,килограмм,М');
 							--alert_note('V_ID_MASSA_OUT TSELOE = '||V_ID_MASSA_OUT);
 					end if;	    
 				end if ;  			    
 				v_marker := '13';
 				v_massa_mesta := v_KOL_VO_PALLETO||chr(10)|| V_ID_MASSA_OUT;
 				--    
-				-- РѕРїСЂРµРґРµР»СЏСЋ С†РµРЅРЅРѕСЃС‚СЊ РіСЂСѓР·Р° 
+				-- определяю ценность груза 
 				v_tennosti := null;
 				if rec.tsennosti ='1' then 
-				  v_tennosti := 'РЎРѕРіР»Р°СЃРЅРѕ РџСЂР°Р№СЃ Р»РёСЃС‚Р°';
+				  v_tennosti := 'Согласно Прайс листа';
 				else 
 					if rec.SUMM_TOVARA_TORG_12 is not null then 
 						if instr(rec.SUMM_TOVARA_TORG_12,'.') > 0 then
 							v_tennosti_ts:= substr( rec.SUMM_TOVARA_TORG_12,1,instr( rec.SUMM_TOVARA_TORG_12,'.')-1) ;
 							v_tennosti_dr:= substr(rec.SUMM_TOVARA_TORG_12,instr(rec.SUMM_TOVARA_TORG_12,'.')+1);
-							v_tennosti := v_tennosti_ts||', '||utility_pkg.QuantityNatural2TextRus(to_number(v_tennosti_ts),'СЂСѓР±.')||' ,'||v_tennosti_dr;
+							v_tennosti := v_tennosti_ts||', '||utility_pkg.QuantityNatural2TextRus(to_number(v_tennosti_ts),'руб.')||' ,'||v_tennosti_dr;
 						else 
-							v_tennosti := rec.SUMM_TOVARA_TORG_12||', '||utility_pkg.QuantityNatural2TextRus(to_number(rec.SUMM_TOVARA_TORG_12),'СЂСѓР±.');
+							v_tennosti := rec.SUMM_TOVARA_TORG_12||', '||utility_pkg.QuantityNatural2TextRus(to_number(rec.SUMM_TOVARA_TORG_12),'руб.');
 						end if;
 					end if;
 				end if;
 				--
 				v_marker := '19';
-				-- Р”Р»СЏ Р’РћР•РќРўР•Р›Р•РљРћРњ-Р° РѕСЃС‚Р°РІР»СЏСЋ РїРѕР»СЏ РІ С„Р°Р№Р»Рµ РїСѓСЃС‚С‹РјРё A41 Рё A45 Рё Рђ26-v_per_doc
+				-- Для ВОЕНТЕЛЕКОМ-а оставляю поля в файле пустыми A41 и A45 и А26-v_per_doc
 				begin
 					select n_eng into v_A41 from kb_zak where id=rec.ID_ZAK;
 				exception when others then v_A41:=null;
 				end;	
 				if  v_A41='VTK GROUP' then
 					V_ZAO_GK_SEVER := v_zao_gk_domod;
-					-- С‚РёРїРѕРІРѕР№ РіСЂСѓР·  		    	       
+					-- типовой груз  		    	       
 					begin
-						if upper(V_ID_MASSA_OUT)='0, РќРћР›Р¬ РљРР›РћР“Р РђРњРњ' then V_ID_MASSA_OUT:= null; end if;
+						if upper(V_ID_MASSA_OUT)='0, НОЛЬ КИЛОГРАММ' then V_ID_MASSA_OUT:= null; end if;
 						rec.TIPOVOI_GRUZ := V_ID_TIP_GRUZA_OUT ; 
 					end;          
 					v_A41 := ' ';
 					v_A45 := ' ';
 					v_per_doc :=' ';
 
-				-- Р·Р°СЏРІРєР° 6102 РџРѕР»СЏРєРѕРІР° Рў. РґР»СЏ РРєРµРё РјРµРЅСЏСЋ Р“СЂСѓР·РѕРѕС‚РїСЂР°РІРёС‚РµР»СЏ
-				elsif rec.ID_ZAK in ( '0102254951' ) then      --<- РРљР•Рђ
-					V_ID_ZAK_OUT := 'Р—РђРћ "Р“Рљ "РЎР•Р’Р•Р РўР РђРќРЎ, Р Р¤, 141400, РњРѕСЃРєРѕРІСЃРєР°СЏ РѕР±Р»Р°СЃС‚СЊ, Рі. РҐРёРјРєРё, Р’Р°С€СѓС‚РёРЅСЃРєРѕРµ С€РѕСЃСЃРµ, РґРѕРј 20, РєРѕСЂРїСѓСЃ 1';
+				-- заявка 6102 Полякова Т. для Икеи меняю Грузоотправителя
+				elsif rec.ID_ZAK in ( '0102254951' ) then      --<- ИКЕА
+					V_ID_ZAK_OUT := 'ЗАО "ГК "СЕВЕРТРАНС, РФ, 141400, Московская область, г. Химки, Вашутинское шоссе, дом 20, корпус 1';
 				end if;
-				-- Р—Р°СЏРІРєР°  6168 Р›СѓРєРёРЅР° РќРѕРІР°СЏ РўР Рќ
+				-- Заявка  6168 Лукина Новая ТРН
 				if rec.id_zak is not null then 
 					begin
 					v_marker:='19.1'; 
@@ -185,24 +185,24 @@ begin
 							where a.id = rec.ID_ZAK  
 						;		    	  
 					exception when others then 
-						alert_note('Р’РЅРёРјР°РЅРёРµ РѕС€РёР±РєР° РѕР±СЂР°Р±РѕС‚РєРё РџРµС‡Р°С‚Рё Marker = '||v_marker|| ' '||sqlerrm);
+						alert_note('Внимание ошибка обработки Печати Marker = '||v_marker|| ' '||sqlerrm);
 					end;		      
 				end if ;
 				--
-				-- РґРµР»Р°СЋ С†РёРєР» РїРѕ РєРѕР»-РІСѓ СЌРєР·РµРјРїР»СЏСЂРѕРІ
+				-- делаю цикл по кол-ву экземпляров
 				v_marker := '20';
 				v_qe := 1; --rec.KOL_EXEMPLIAR ;
 				v_count:=0;
 				for z in 1..v_qe loop
 					v_count:=v_count+1;
 					--
-					--> VVVVVVVVVVVVVVVVVVVVVVVVVVVVVV --- СЃС‡РµС‚ СЃСѓРјРјС‹ РёР· MX1_3 -- yurmir *** 19/02/2017 ***
+					--> VVVVVVVVVVVVVVVVVVVVVVVVVVVVVV --- счет суммы из MX1_3 -- yurmir *** 19/02/2017 ***
 					--
 					SELECT
 							to_char(sum(UNITS * PRC)), to_char(count(*)) into v_VTK_SUM1, v_VTK_SUM2
 					FROM
 					(
-					---> BEGIN --- Р·Р°РїСЂРѕСЃ РёР· РѕС‚С‡РµС‚Р° << Р’РўРљ MX1_3 >>
+					---> BEGIN --- запрос из отчета << ВТК MX1_3 >>
 					SELECT
 					 min( decode( substr( ltrim( s1.name ),1,1 )
 								 , '(' , ltrim(substr(ltrim(s1.name), instr(s1.name,')',2)+1) ) 
@@ -226,7 +226,7 @@ begin
 						  ,sku  s
 						  ,sku s1
 					 WHERE
-						   ----------- VVVVVV ---- РїРѕРёСЃРє РёСЃС…РѕРґРЅРѕРіРѕ sost.ID --  yurmir *** 19/02/2017 ***
+						   ----------- VVVVVV ---- поиск исходного sost.ID --  yurmir *** 19/02/2017 ***
 						   ss.id in (
 										select
 											ss.id SS_id ---, ss.dt_sost SS_dt, ss.sost_prm SS_PRM, sp.n_zakaza ZAK_N, zk.n_zak ZAK_TITL, zk.n_eng VTK, ss.id_sost
@@ -237,17 +237,17 @@ begin
 										and sp.n_zakaza =  v_VTK_SUM2   --<-- N_ZAKAZA
 										and ss.id_obsl =  sp.id
 										and zk.id = sp.id_zak
-										and ss.id_sost in ('KB_USL60177','KB_USL60174','KB_USL60173') -- 4104 Р¤Р°РєС‚РёС‡РµСЃРєР°СЏ РѕС‚РіСЂСѓР·РєР° С‚РѕРІР°СЂР° РёР· РЎРћРҐ
+										and ss.id_sost in ('KB_USL60177','KB_USL60174','KB_USL60173') -- 4104 Фактическая отгрузка товара из СОХ
 										and zk.n_eng like '%VTK%GROUP%'
 						   )
-						   ----------- ^^^^^^ ---- РїРѕРёСЃРє РёСЃС…РѕРґРЅРѕРіРѕ sost.ID --  yurmir *** 19/02/2017 ***
+						   ----------- ^^^^^^ ---- поиск исходного sost.ID --  yurmir *** 19/02/2017 ***
 					   and sp.id= ss.id_obsl and sp1.npost(+) = sp.npost
-					   and ss.id_sost in ('KB_USL60177','KB_USL60174','KB_USL60173')             -- 4104 Р¤Р°РєС‚РёС‡РµСЃРєР°СЏ РѕС‚РіСЂСѓР·РєР° С‚РѕРІР°СЂР° РёР· РЎРћРҐ
+					   and ss.id_sost in ('KB_USL60177','KB_USL60174','KB_USL60173')             -- 4104 Фактическая отгрузка товара из СОХ
 					   and (
-						   l.ORDER_ID =  nvl(sp1.id,ss.id_obsl) AND ss.id_sost = ('KB_USL60177') -- 4104 Р¤Р°РєС‚РёС‡РµСЃРєР°СЏ РѕС‚РіСЂСѓР·РєР° С‚РѕРІР°СЂР° РёР· РЎРћРҐ
-					   and l.TAGNM = 'order_detail_info'                                         -- РґР»СЏ Р—РђРљРђР—РћР’ РІ РїРѕР»Рµ TAGNM РµСЃР»Рё RECEIVE_COMPLETE_DETAIL
-						or l.inc_id= nvl(sp1.id,ss.id_obsl) AND ss.id_sost <> ('KB_USL60177')    -- 4102 Р¤Р°РєС‚РёС‡РµСЃРєР°СЏ РїРѕСЃС‚Р°РІРєР° С‚РѕРІР°СЂР° РЅР° РЎРћРҐ
-					   and l.TAGNM = 'receive_complete_detail'                                   -- РґР»СЏ Р—РђРљРђР—РћР’ РІ РїРѕР»Рµ TAGNM РµСЃР»Рё RECEIVE_COMPLETE_DETAIL
+						   l.ORDER_ID =  nvl(sp1.id,ss.id_obsl) AND ss.id_sost = ('KB_USL60177') -- 4104 Фактическая отгрузка товара из СОХ
+					   and l.TAGNM = 'order_detail_info'                                         -- для ЗАКАЗОВ в поле TAGNM если RECEIVE_COMPLETE_DETAIL
+						or l.inc_id= nvl(sp1.id,ss.id_obsl) AND ss.id_sost <> ('KB_USL60177')    -- 4102 Фактическая поставка товара на СОХ
+					   and l.TAGNM = 'receive_complete_detail'                                   -- для ЗАКАЗОВ в поле TAGNM если RECEIVE_COMPLETE_DETAIL
 						   )
 					   and l.SOLVO_SKU_ID   = s.id and l.QTY > 0 and S1.HOLDER_ID = S.HOLDER_ID
 					   and S1.sku_id = DECODE( INSTR((S.sku_id),'-')
@@ -255,12 +255,12 @@ begin
 											   SUBSTR((S.sku_id),1,INSTR((S.sku_id),'-')- 1)
 											   )
 					 GROUP BY s1.sku_id, s1.mu_units
-					---> END --- Р·Р°РїСЂРѕСЃ РёР· РѕС‚С‡РµС‚Р° << Р’РўРљ MX1_3 >>
+					---> END --- запрос из отчета << ВТК MX1_3 >>
 					);
 					if v_VTK_SUM1 is not null then
-						v_tennosti := ' РћР±С‰Р°СЏ СЃС‚РѕРёРјРѕСЃС‚СЊ Р·Р°РєР°Р·Р°   '|| v_VTK_SUM1 ||'   СЂСѓР±. ';
+						v_tennosti := ' Общая стоимость заказа   '|| v_VTK_SUM1 ||'   руб. ';
 					end if;
-					--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^--- СЃС‡РµС‚ СЃСѓРјРјС‹ РёР· MX1_3 -- yurmir *** 19/02/2017 ***
+					--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^--- счет суммы из MX1_3 -- yurmir *** 19/02/2017 ***
 					--   
 					--> VVVVVV <- yurmir *** 06.10.2017 ***   
 					--
@@ -279,36 +279,36 @@ begin
 						where   z.id = '0102292445'
 						;
 					exception when others then
-					   V_ZAO_GK_SEVER := 'РћР±С‰РµСЃС‚РІРѕ СЃ РѕРіСЂР°РЅРёС‡РµРЅРЅРѕР№ РѕС‚РІРµС‚СЃРІРµРЅРЅРѕСЃС‚СЊСЋ "Р“Рљ "РЎР•Р’Р•Р РўР РђРќРЎ" (РћРћРћ "Р“Рљ "РЎР•Р’Р•Р РўР РђРќРЎ"), 141402, РњРѕСЃРєРѕРІСЃРєР°СЏ РѕР±Р»Р°СЃС‚СЊ, Рі. РҐРёРјРєРё, РєРІР°СЂС‚Р°Р» РљР»СЏР·СЊРјР°, РІР»Р°РґРµРЅРёРµ 1Р”., (499) 753-77-25, (495) 502-87-70';
+					   V_ZAO_GK_SEVER := 'Общество с ограниченной ответсвенностью "ГК "СЕВЕРТРАНС" (ООО "ГК "СЕВЕРТРАНС"), 141402, Московская область, г. Химки, квартал Клязьма, владение 1Д., (499) 753-77-25, (495) 502-87-70';
 					end;
 					--   
 					--> ^^^^^^ <- yurmir *** 06.10.2017 ***   
 					--
 					begin 
-					--> VVVVVV <---------------------------------- РћРџР Р•Р”Р•Р›Р•РќРР• *** dt_sost *** yurmir *** 17.09.2018
+					--> VVVVVV <---------------------------------- ОПРЕДЕЛЕНИЕ *** dt_sost *** yurmir *** 17.09.2018
 						select 		MIN(sost.dt_sost_end) into dt_sost 
 							from  	kb_spros spros,  kb_sost sost 
 							where spros.id_zak in ( rec.id_zak ) and spros.id_tir in ( rec.id_tir )
 							  and instr( rec.n_zakaza, spros.n_zakaza ) > 0      
 							  and   (sost.id_obsl = spros.id or sost.id_tir = spros.id_tir) 
-								  and   id_sost in (  'KB_USL60184' );   --<- 3021  Рђ/Рњ РІСЉРµС…Р°Р»Р° РЅР° С‚РµСЂСЂРёС‚РѕСЂРёСЋ РЎРћРҐ
-					--> VVVVVV <---------------------------------- РћРџР Р•Р”Р•Р›Р•РќРР• *** dt_fact *** yurmir *** 16.09.2018 
+								  and   id_sost in (  'KB_USL60184' );   --<- 3021  А/М въехала на территорию СОХ
+					--> VVVVVV <---------------------------------- ОПРЕДЕЛЕНИЕ *** dt_fact *** yurmir *** 16.09.2018 
 						select 		MIN(sost.dt_sost_end) into dt_fact 
 							from  	kb_spros spros,  kb_sost sost 
 							where spros.id_zak in ( rec.id_zak ) and spros.id_tir in ( rec.id_tir )
 							  and instr( rec.n_zakaza, spros.n_zakaza ) > 0      
 							  and   (sost.id_obsl = spros.id or sost.id_tir = spros.id_tir) 
-							  and   id_sost in (  'KB_USL60188' );  --<<- 3023   Рђ/Рњ РІС‹РµС…Р°Р»Р° СЃ С‚РµСЂСЂРёС‚РѕСЂРёРё РЎРћРҐ              
+							  and   id_sost in (  'KB_USL60188' );  --<<- 3023   А/М выехала с территории СОХ              
 					exception when others then
 						Null;
 					end;
 					Excel_ole_Hoff( --'RAPTTN4Print'
 						NVL(UPPER(rec.n_zakaza ),    ' --- ')    --<- n_zakaza_cyc
-						,''    -->  'Р­РєР·РµРјРїР»СЏСЂв„– '||to_char(v_count)                    		                 
-						,'Р”Р°С‚Р° '||to_char(trunc(sysdate),'dd.mm.rrrr') --> NVL(to_char(trunc(dt_sost),'dd.mm.rrrr'), ' --- ') 
+						,''    -->  'Экземпляр№ '||to_char(v_count)                    		                 
+						,'Дата '||to_char(trunc(sysdate),'dd.mm.rrrr') --> NVL(to_char(trunc(dt_sost),'dd.mm.rrrr'), ' --- ') 
 						,NVL(to_char(dt_sost,'dd.mm.rrrr hh24.mi'), ' --- ') 
 						,NVL(to_char(dt_fact,'dd.mm.rrrr hh24.mi'), ' --- ')        
-						,'в„– '||UPPER(NVL(v_adz_out,rec.nomer_adz ))
+						,'№ '||UPPER(NVL(v_adz_out,rec.nomer_adz ))
 						,NVL(UPPER(V_ID_ZAK_OUT ),    ' --- ')
 						,NVL(REC.TOCIKA_VIGRUZKI ,' --- ')
 						--,NVL(UPPER(V_ID_ISP_OUT ),    ' --- ')
@@ -326,12 +326,12 @@ begin
 						,NVL(UPPER(rec.NOMER_PUTEVOGO_UDOST ),    ' --- ') 
 						,' '--,UPPER(rec.SURNAME_NAME )
 						,NVL(UPPER(v_tennosti ),   ' --- ')
-						,NVL(to_char(trunc(dt_sost),'dd.mm.rrrr'), ' --- ')||' '||UPPER(V_inter_swift)-- list 2  A4   9. РРЅС„РѕСЂРјР°С†РёСЏ Рѕ РїСЂРёРЅСЏС‚РёРё Р·Р°РєР°Р·Р° (Р·Р°СЏРІРєРё) Рє РёСЃРїРѕР»РЅРµРЅРёСЋ
+						,NVL(to_char(trunc(dt_sost),'dd.mm.rrrr'), ' --- ')||' '||UPPER(V_inter_swift)-- list 2  A4   9. Информация о принятии заказа (заявки) к исполнению
 						,NVL(UPPER(v_A41),   ' --- ')
 						,NVL(UPPER(v_A45),   ' --- ')
 						,NVL(REC.TOCIKA_VIGRUZKI ,' --- ') --> OLD --> NVL(rec.MESTO_VIGRUZKI,NVL(REC.TOCIKA_VIGRUZKI ,' --- '))
 						,NVL(UPPER(V_ZAO_GK_SEVER ),    ' --- ')	       
-						,NVL(UPPER(rec.KOL_VO_PALLETO_MEST)||' РјРµСЃС‚',' --- ')       
+						,NVL(UPPER(rec.KOL_VO_PALLETO_MEST)||' мест',' --- ')       
 						,NVL(UPPER(v_NAIMEN_BANK),' --- ')   
 						,nvl(v_tlf_zak,' --- ')
 						,nvl(v_tlf_pok,' --- ')
@@ -347,16 +347,16 @@ begin
 
 				:SURNAME_NAME:= :SURNAME_NAME;
 				---------------------------
-				-- СЃС‚Р°РЅРґР°СЂС‚РЅР°СЏ РѕР±СЂР°Р±РѕС‚РєР° --
+				-- стандартная обработка --
 				ret_code := Def_KEY_COMMIT;
 				---------------------------
 		    end if;
 		end loop;
 		-------------------------
-		--СЃС‚Р°РЅРґР°СЂС‚РЅР°СЏ РѕР±СЂР°Р±РѕС‚РєР°--
+		--стандартная обработка--
 		Def_KEY_EXIT;
 		-------------------------
 	end if;
 exception when others then 
- 	alert_note('Р’РЅРёРјР°РЅРёРµ РѕС€РёР±РєР° РѕР±СЂР°Р±РѕС‚РєРё РџРµС‡Р°С‚Рё Marker = '||v_marker|| ' '||sqlerrm);
+ 	alert_note('Внимание ошибка обработки Печати Marker = '||v_marker|| ' '||sqlerrm);
 end;
